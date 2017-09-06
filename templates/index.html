@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  {% block extra_scripts %}
+  <script>
+  function display_feed_error(div, msg) {
+    $(div).empty().hide().append("<strong>Error! </strong>"+msg);
+    $(div).finish().slideDown(400).delay(2000).slideUp(400);
+  }
+  </script>
+
+  <script>
+  $(document).ready(function() {
+    $('.btn-danger').each(function(){
+      $(this).click(function(){
+        var remove = '#feed_'+$(this).attr('id');
+        $.post('/delete_feed', {
+          feed: $(this).attr('id')
+        }).done(function(data) {
+          if (data['status'] == 'OK') {
+            $(remove).slideUp(400);
+          } else {
+            display_feed_error("#delfeed_error", "Invalid Feed");
+          }
+        }).fail(function() {
+          display_feed_error("#delfeed_error", "Could not contact server");
+        });
+      });
+    });
+  });
+  </script>
+
+  <script>
+  $(document).ready(function() {
+    $('a#newfeedbutton').click(function(){
+      $("#index1").delay(200).fadeOut(400);
+      $("#index2").fadeOut(400);
+      $('div[name=newfeed]').delay(600).fadeIn(400);
+    });
+  });
+  </script>
+
+  <script>
+  $(document).ready(function() {
+    $('#newfeedsubmit').on("submit", function(event){
+      event.preventDefault();
+      $.post("/new_feed", {
+        feed_url: $("#feed_url").val()
+      }).done(function(data) {
+        if (data['status'] == 'OK') {
+          $("div[name='newfeed']").fadeOut(400);
+          window.location.replace("/index");
+        } else {
+          display_feed_error("#newfeed_error", "Invalid Feed");
+        }
+      }).fail(function() {
+        display_feed_error("#newfeed_error", "Could not contact server");
+      });
+    });
+  });
+  </script>
+  {% endblock %}
+
+  <div class="main-header" id="index1">
+    <h1 class="main-title">Welcome to your feed {{ current_user.nickname }}!</h1>
+    <p class="lead main-description">Choose a source to see the news</p>
+  </div>
+
+  <div class="row" id="index2">
+    <div class="col-md-10 col-md-offset-1">
+      <div class="alert alert-danger" id="delfeed_error" style="display:none;" role="alert"></div>
+      <ul class="list-group">
+        {% for feed in current_user.feeds %}
+          <li class="list-group-item" id="feed_{{feed.id}}">
+            <a class="badge btn-danger" id={{feed.id}}>
+              <i class="fa fa-times"></i>
+            </a>
+            <a href="{{ url_for('rss', feed=feed.id) }}"><h4 class="list-group-item-heading">{{ feed.title }}</h4></a>
+            <p class="list-group-item-text">{{ feed.description }}</p>
+          </li>
+        {% endfor %}
+        <li class="list-group-item list-group-item-success text-center">
+           <a class="text-success" href=# id="newfeedbutton"><i class="fa fa-plus fa-lg"></i> Add New Feed</a>
+        </li>
+      </ul>
+    </div>
+  </div><!-- /.row -->
+
+  <div class="main-header" name="newfeed" style='display:none;'>
+    <h1 class="main-title">Add a new feed!</h1>
+  </div>
+
+  <div class="row" name="newfeed" style='display:none;'>
+    <div class="col-md-8 col-md-offset-1">
+      <div class="alert alert-danger" id="newfeed_error" style="display:none;" role="alert"></div>
+      <form class="form-horizontal" id="newfeedsubmit" method="post">
+        <div class="form-group">
+          <label for="feed_url" class="col-sm-2 control-label">URL</label>
+          <div class="col-sm-10">
+            <input type="url" class="form-control" id="feed_url" placeholder="Feed URL">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-primary">Add Feed</button>
+          </div>
+        </div>
+      </form>
+      </div>
+  </div><!-- /.row -->
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}- 404{% endblock %}
+
+{% block body %}
+
+<div class="main-masthead">
+    <div class="container">
+        <nav class="main-nav">
+            <a class="main-nav-item active fa fa-home fa-lg" href="{{ url_for('main') }}"></a>
+        </nav>
+    </div>
+</div>
+
+<div class="container" name="container_fade">
+  <div class="main-header">
+    <h1 class="main-title">404 - Page Not Found</h1>
+    <p class="lead main-description"> Santa Claus know what you did</p>
+  </div>
+</div>
+
+{% endblock %}
